@@ -1,5 +1,6 @@
 import os
-os.environ['HADOOP_HOME'] = "C:\\hadoop"
+os.environ["HADOOP_HOME"] = "C:\\hadoop"  # Ensure this is set (even if winutils is only used for Windows permissions)
+os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
@@ -11,11 +12,17 @@ schema = StructType() \
     .add("event_type", StringType()) \
     .add("timestamp", DoubleType())
 
-# Initialize Spark session with Kafka support
-spark = SparkSession.builder \
-    .appName("KafkaSparkChurnProcessor") \
-    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0") \
+spark = (
+    SparkSession.builder
+    .appName("KafkaSparkStructuredStreaming")
+    .config("spark.sql.streaming.checkpointLocation", "file:///C:/temp/spark-checkpoint")
+    .config("spark.hadoop.io.nativeio.enabled", "false")
+    .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
+    .config("spark.hadoop.fs.AbstractFileSystem.file.impl", "org.apache.hadoop.fs.RawLocalFileSystem")
+    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5")
     .getOrCreate()
+)
+
 
 # Read from Kafka
 df_raw = spark.readStream \
@@ -36,6 +43,8 @@ df_features = df_parsed.groupBy("customer_id", "event_type").count()
 query = df_features.writeStream \
     .outputMode("complete") \
     .format("console") \
+    .option("checkpointLocation", "file:///C:/temp/spark-checkpoint") \
     .start()
+
 
 query.awaitTermination()
