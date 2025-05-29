@@ -1,0 +1,7 @@
+{
+  "terminal.integrated.env.windows": {
+    "JAVA_HOME": "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.7.6-hotspot",
+    "HADOOP_HOME": "C:\\hadoop-3.3.6",
+    "SPARK_HOME": "C:\\spark"
+  }
+}

@@ -6,6 +6,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_json, col
 from pyspark.sql.types import StructType, StringType, DoubleType
 
+
+
 # Define schema for incoming Kafka messages
 schema = StructType() \
     .add("customer_id", StringType()) \
@@ -22,7 +24,7 @@ spark = (
     .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5")
     .getOrCreate()
 )
-
+spark.sparkContext.setLogLevel("ERROR")
 
 # Read from Kafka
 df_raw = spark.readStream \
@@ -39,11 +41,13 @@ df_parsed = df_raw.selectExpr("CAST(value AS STRING)") \
 # Example: basic transformation - count events per customer (can be expanded)
 df_features = df_parsed.groupBy("customer_id", "event_type").count()
 
+print(df_features)
+
 # Output to console for now
 query = df_features.writeStream \
-    .outputMode("complete") \
+    .outputMode("append") \
     .format("console") \
-    .option("checkpointLocation", "file:///C:/temp/spark-checkpoint") \
+    .option("checkpointLocation", "/opt/spark-data/checkpoints") \
     .start()
 
 
