@@ -1,54 +1,64 @@
-import os
-os.environ["HADOOP_HOME"] = "C:\\hadoop"  # Ensure this is set (even if winutils is only used for Windows permissions)
-os.environ["SPARK_LOCAL_IP"] = "127.0.0.1"
+from kafka import KafkaConsumer
+import json
+import psycopg2
+from psycopg2 import sql, OperationalError
+import logging
 
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col
-from pyspark.sql.types import StructType, StringType, DoubleType
+# Optional: Set up basic logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+# PostgreSQL connection setup
+try:
+    conn = psycopg2.connect(
+        dbname="postgres", user="postgres", password="admin", host="localhost", port="5432"
+    )
+    cur = conn.cursor()
+    logger.info("Connected to PostgreSQL database.")
 
+    # Create table if it doesn't exist
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS customer_events (
+            customer_id INT,
+            event_type TEXT,
+            timestamp TIMESTAMP
+        )
+    """)
+    conn.commit()
+    logger.info("Ensured customer_events table exists.")
 
-# Define schema for incoming Kafka messages
-schema = StructType() \
-    .add("customer_id", StringType()) \
-    .add("event_type", StringType()) \
-    .add("timestamp", DoubleType())
+except OperationalError as e:
+    logger.error(f"Database connection failed: {e}")
+    exit(1)
 
-spark = (
-    SparkSession.builder
-    .appName("KafkaSparkStructuredStreaming")
-    .config("spark.sql.streaming.checkpointLocation", "file:///C:/temp/spark-checkpoint")
-    .config("spark.hadoop.io.nativeio.enabled", "false")
-    .config("spark.hadoop.fs.file.impl", "org.apache.hadoop.fs.LocalFileSystem")
-    .config("spark.hadoop.fs.AbstractFileSystem.file.impl", "org.apache.hadoop.fs.RawLocalFileSystem")
-    .config("spark.jars.packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.5")
-    .getOrCreate()
-)
-spark.sparkContext.setLogLevel("ERROR")
+# Kafka Consumer
+try:
+    consumer = KafkaConsumer(
+        'customer_events',
+        bootstrap_servers='localhost:9094',
+        auto_offset_reset='earliest',
+        enable_auto_commit=True,
+        group_id='my-consumer-group',
+        value_deserializer=lambda x: json.loads(x.decode('utf-8'))
+    )
+    logger.info("Kafka consumer started. Listening for messages...")
 
-# Read from Kafka
-df_raw = spark.readStream \
-    .format("kafka") \
-    .option("kafka.bootstrap.servers", "localhost:9094") \
-    .option("subscribe", "customer_events") \
-    .load()
+except Exception as e:
+    logger.error(f"Kafka consumer could not be started: {e}")
+    exit(1)
 
-# Parse JSON from Kafka value
-df_parsed = df_raw.selectExpr("CAST(value AS STRING)") \
-    .select(from_json(col("value"), schema).alias("data")) \
-    .select("data.*")
+# Message loop
+for message in consumer:
+    try:
+        data = message.value
+        logger.info(f"Received: {data}")
 
-# Example: basic transformation - count events per customer (can be expanded)
-df_features = df_parsed.groupBy("customer_id", "event_type").count()
+        cur.execute(
+            "INSERT INTO customer_events (customer_id, event_type, timestamp) VALUES (%s, %s, %s)",
+            (data['customer_id'], data['event_type'], data['timestamp'])
+        )
+        conn.commit()
 
-print(df_features)
-
-# Output to console for now
-query = df_features.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .option("checkpointLocation", "/opt/spark-data/checkpoints") \
-    .start()
-
-
-query.awaitTermination()
+    except (Exception, psycopg2.Error) as e:
+        logger.error(f"Failed to insert message: {e}")
+        conn.rollback()  # prevent broken transactions
