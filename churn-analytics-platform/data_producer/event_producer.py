@@ -26,3 +26,4 @@ if __name__ == "__main__":
         print(f"Sending event: {event}")
         producer.send("customer_events", event)
         time.sleep(1)  # send 1 message per second
+  
