@@ -91,6 +91,6 @@ if __name__ == "__main__":
             event = generate_event()
             print(f"Sending event: {event}")
             producer.send("customer_events", event)
-            time.sleep(1)
+            time.sleep(60)
     except KeyboardInterrupt:
         print("Kafka producer stopped manually.")

@@ -18,7 +18,7 @@ try:
 
     # Create table if it doesn't exist
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS telecom_customer_events (
+        CREATE TABLE IF NOT EXISTS customer_events.telecom_customer_events_raw (
             event_id SERIAL PRIMARY KEY,
             gender VARCHAR(10),
             age INTEGER,
@@ -85,7 +85,7 @@ for message in consumer:
 
         cur.execute(
             """
-            INSERT INTO telecom_customer_events (
+            INSERT INTO customer_events.telecom_customer_events_raw (
                 gender, age, married, number_of_dependents, number_of_referrals,
                 tenure_in_months, offer, phone_service, avg_monthly_long_distance_charges,
                 multiple_lines, internet_service, internet_type, avg_monthly_gb_download,
