@@ -71,6 +71,7 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./churn-analytics-platform:/opt/airflow/churn-analytics-platform
     command: webserver
 
   airflow-scheduler:
@@ -84,6 +85,7 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./churn-analytics-platform:/opt/airflow/churn-analytics-platform
     command: scheduler
 
 volumes:
