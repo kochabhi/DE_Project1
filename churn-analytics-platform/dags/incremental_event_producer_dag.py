@@ -24,5 +24,5 @@ with DAG(
 
     run_event_producer = BashOperator(
         task_id='run_incremental_event_producer',
-        bash_command='python3 /opt/airflow/churn-analytics-platform/data_producer/incremental_event_producer.py'
+        bash_command='python /opt/airflow/data_producer/incremental_event_producer.py'
     )

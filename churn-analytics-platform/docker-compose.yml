@@ -58,7 +58,10 @@ services:
     restart: on-failure
 
   airflow-webserver:
-    image: apache/airflow:2.9.1
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
+    image: custom-airflow:latest
     container_name: airflow-webserver
     depends_on:
       - postgres
@@ -71,11 +74,14 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./churn-analytics-platform:/opt/airflow/churn-analytics-platform
+      - ./data_producer:/opt/airflow/data_producer
+      - ./streaming_pipeline:/opt/airflow/streaming_pipeline
+      - ./notebooks:/opt/airflow/notebooks
+      - ./ml_model:/opt/airflow/ml_model
     command: webserver
 
   airflow-scheduler:
-    image: apache/airflow:2.9.1
+    image: custom-airflow:latest
     container_name: airflow-scheduler
     depends_on:
       - airflow-webserver
@@ -85,7 +91,10 @@ services:
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./churn-analytics-platform:/opt/airflow/churn-analytics-platform
+      - ./data_producer:/opt/airflow/data_producer
+      - ./streaming_pipeline:/opt/airflow/streaming_pipeline
+      - ./notebooks:/opt/airflow/notebooks
+      - ./ml_model:/opt/airflow/ml_model
     command: scheduler
 
 volumes:
