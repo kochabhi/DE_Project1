@@ -50,9 +50,10 @@ services:
     environment:
       - _AIRFLOW_WWW_USER_USERNAME=airflow
       - _AIRFLOW_WWW_USER_PASSWORD=airflow
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
     entrypoint: >
       bash -c "airflow db init &&
-               airflow users create --username airflow --password airflow --firstname Air --lastname Flow --role Admin --email airflow@example.com"
+        airflow users create --username airflow --password airflow --firstname Air --lastname Flow --role Admin --email airflow@example.com"
     restart: on-failure
 
   airflow-webserver:
@@ -67,7 +68,7 @@ services:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./churn-analytics-platform:/opt/airflow
     command: webserver
 
   airflow-scheduler:
@@ -79,7 +80,7 @@ services:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
     volumes:
-      - ./dags:/opt/airflow/dags
+      - ./churn-analytics-platform:/opt/airflow
     command: scheduler
 
 volumes:
