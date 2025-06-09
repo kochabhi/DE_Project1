@@ -11,7 +11,7 @@ import os
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
 
-CSV_PATH = "ml_model/telecom_customer_churn.csv"
+CSV_PATH = "/opt/airflow/ml_model/telecom_customer_churn.csv"
 
 COLUMNS = [
     "Gender","Age","Married","Number of Dependents","Number of Referrals","Tenure in Months","Offer","Phone Service","Avg Monthly Long Distance Charges",
@@ -77,7 +77,7 @@ def generate_event():
 # Kafka Producer Setup
 # ─────────────────────────────────────────────────────────────
 producer = KafkaProducer(
-    bootstrap_servers='localhost:9094',
+    bootstrap_servers='kafka:9092',
     value_serializer=lambda v: json.dumps(v).encode('utf-8')
 )
 

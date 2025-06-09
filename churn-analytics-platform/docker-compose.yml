@@ -42,6 +42,16 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  postgres_kafka:
+    image: postgres:15
+    container_name: postgres_kafka
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres_kafka_data:/var/lib/postgresql/data
+
   airflow-init:
     image: apache/airflow:2.9.1
     container_name: airflow-init
@@ -100,3 +110,4 @@ services:
 volumes:
   kafka_data:
   postgres_data:
+  postgres_kafka_data:

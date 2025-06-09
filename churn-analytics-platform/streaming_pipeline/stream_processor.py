@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # PostgreSQL connection setup
 try:
     conn = psycopg2.connect(
-        dbname="postgres", user="postgres", password="admin", host="localhost", port="5432"
+        dbname="postgres", user="postgres", password="admin", host="postgres_kafka", port="5432"
     )
     cur = conn.cursor()
     logger.info("Connected to PostgreSQL database.")
@@ -65,7 +65,7 @@ except OperationalError as e:
 try:
     consumer = KafkaConsumer(
         'customer_events',
-        bootstrap_servers='localhost:9094',
+        bootstrap_servers='kafka:9092',
         auto_offset_reset='earliest',
         enable_auto_commit=True,
         group_id='my-consumer-group',
