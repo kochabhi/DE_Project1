@@ -12,7 +12,7 @@ default_args = {
 with DAG(
     dag_id='data_transformation_dag',
     default_args=default_args,
-    schedule_interval=None,  # Trigger manually or integrate later
+    schedule_interval=timedelta(minutes=5),  # Trigger manually or integrate later
     catchup=False,
     tags=['transformation', 'churn', 'etl'],
 ) as dag:

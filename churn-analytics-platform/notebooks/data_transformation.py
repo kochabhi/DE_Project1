@@ -74,9 +74,12 @@ def transform(df: DataFrame) -> DataFrame:
     }
 
     for col_name, mapping in binary_mappings.items():
-        df = df.withColumn(col_name, when(col(col_name).isNull(), 0))
+        # THIS IS THE NEW LOGIC TO REPLACE THE ORIGINAL LINES:
+        case_statement = when(col(col_name).isNull(), 0) # Start building the case statement for nulls
         for key, val in mapping.items():
-            df = df.withColumn(col_name, when(col(col_name) == key, val).otherwise(col(col_name)))
+            case_statement = case_statement.when(col(col_name) == key, val) # Add conditions for specific string mappings
+        
+        df = df.withColumn(col_name, case_statement.otherwise(0).cast(IntegerType()))
 
     # One-hot encode multi-category columns with null handling
     ohe_columns = {
@@ -140,17 +143,19 @@ def write_to_postgres(df, batch_id):
     df.write \
         .jdbc(url=jdbc_url, table="customer_events.telecom_customer_events_transformed", mode="append", properties=db_properties)
 
+
 # Step 6: Start micro-batch loop (simulating streaming)
 if __name__ == "__main__":
-    print("Starting micro-batch pipeline every 30 seconds...")
+    print("Starting data transformation as a single batch...")
 
-    while True:
-        raw_df = load_source_table()
+    raw_df = load_source_table()
 
-        if not raw_df.head(1):
-            print("No new data to process. Sleeping for 30 seconds...")
-        else:
-            transformed_df = transform(raw_df)
-            write_to_postgres(transformed_df, batch_id=None)
-            print("Batch written. Sleeping for 30 seconds...")
-        time.sleep(30)
+    if not raw_df.head(1):
+        print("No new data to process for this batch.")
+    else:
+        transformed_df = transform(raw_df)
+        write_to_postgres(transformed_df, batch_id=None)
+        print("Data transformation batch completed.")
+
+    # Stop the Spark session when done
+    spark.stop()
