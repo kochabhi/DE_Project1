@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 # PostgreSQL connection setup
 try:
     conn = psycopg2.connect(
-        dbname="postgres", user="postgres", password="admin", host="postgres_kafka", port="5432"
+        dbname="postgres", user="postgres", password="admin", host="postgres", port="5432"
     )
     cur = conn.cursor()
     logger.info("Connected to PostgreSQL database.")

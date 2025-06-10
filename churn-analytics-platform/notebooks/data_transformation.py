@@ -16,7 +16,7 @@ spark = SparkSession.builder \
 spark.sparkContext.setLogLevel("WARN")
 
 # Step 2: PostgreSQL connection info
-jdbc_url = "jdbc:postgresql://postgres_kafka:5432/postgres"
+jdbc_url = "jdbc:postgresql://postgres:5432/postgres"
 db_properties = {
     "user": "postgres",
     "password": "admin",

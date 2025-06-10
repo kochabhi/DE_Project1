@@ -7,6 +7,8 @@ import time
 from faker import Faker
 import os
 
+#docker-compose down
+#docker-compose up --build -d
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuration
 # ──────────────────────────────────────────────────────────────────────────────
