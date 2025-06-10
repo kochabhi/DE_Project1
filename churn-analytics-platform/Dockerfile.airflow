@@ -1,6 +1,22 @@
 # Dockerfile.airflow
 FROM apache/airflow:2.9.1
 
+# Install Java Development Kit (OpenJDK)
+# This is essential for PySpark to run.
+RUN apt-get update && apt-get install -y openjdk-17-jdk && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Set JAVA_HOME environment variable
+# This tells PySpark where to find the Java installation.
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
+
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
+
+# You might have other COPY commands for your DAGs, scripts, etc.
+# Example:
+# COPY dags/ /opt/airflow/dags/
+# COPY notebooks/ /opt/airflow/notebooks/
+# COPY your_project_code/ /opt/airflow/your_project_code/
