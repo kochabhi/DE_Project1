@@ -39,6 +39,8 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=postgres
+    ports:
+      - "5432:5432" # Add this line
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -50,7 +52,7 @@ services:
     environment:
       - _AIRFLOW_WWW_USER_USERNAME=airflow
       - _AIRFLOW_WWW_USER_PASSWORD=airflow
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:admin@postgres:5432/postgres
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     entrypoint: >
       bash -c "airflow db init &&
@@ -70,7 +72,7 @@ services:
       - "8080:8080"
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:admin@postgres:5432/postgres
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags
@@ -87,7 +89,7 @@ services:
       - airflow-webserver
     environment:
       - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:admin@postgres:5432/postgres
       - AIRFLOW__WEBSERVER__SECRET_KEY=e7d6824060130678d7805c50650b62eae4c6f4f6957ec2984fac3adafa7ddf33
     volumes:
       - ./dags:/opt/airflow/dags

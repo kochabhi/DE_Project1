@@ -16,6 +16,13 @@ try:
     cur = conn.cursor()
     logger.info("Connected to PostgreSQL database.")
 
+    # Create Schema if it doesn't exist
+    cur.execute("""
+        CREATE SCHEMA IF NOT EXISTS customer_events
+    """)
+    conn.commit()
+    logger.info("Ensured customer_events schema exists.")
+
     # Create table if it doesn't exist
     cur.execute("""
         CREATE TABLE IF NOT EXISTS customer_events.telecom_customer_events_raw (
