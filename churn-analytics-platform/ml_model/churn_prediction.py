@@ -68,7 +68,7 @@ def load_transformed_data_for_prediction(spark_session, jdbc_url, db_properties,
         # 'uploaded_date' is included here as it's the batch identifier from the source table.
         query_string = f"""
         (SELECT
-            CURRENT_TIMESTAMP AS uploaded_date,
+            event_timestamp AS uploaded_date,
             gender,
             married,
             number_of_dependents,
