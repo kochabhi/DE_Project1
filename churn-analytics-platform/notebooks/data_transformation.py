@@ -23,33 +23,36 @@ db_properties = {
     "driver": "org.postgresql.Driver"
 }
 
-# Step 3: Define read logic (read full table each time)
 def load_source_table():
-    # Load latest timestamp from target
+    latest_ts = None
     try:
         latest_ts_df = spark.read.jdbc(
             url=jdbc_url,
             table="customer_events.telecom_customer_events_transformed",
             properties=db_properties
         ).select(spark_max("event_timestamp").alias("latest_ts"))
-        
-        latest_ts = latest_ts_df.collect()[0]["latest_ts"]
 
+        if latest_ts_df.count() > 0: # Check if there are any rows
+            latest_ts = latest_ts_df.collect()[0]["latest_ts"]
+
+    except Exception as e: # Catch specific exceptions or log the generic one
+        print(f"Error reading latest timestamp from target table or target table is empty/non-existent: {e}. Loading all data from source.")
+        latest_ts = None # Ensure latest_ts is None to trigger full load
+
+    if latest_ts:
         # Read only new records
         df = spark.read.jdbc(
             url=jdbc_url,
             table="customer_events.telecom_customer_events_raw",
             properties=db_properties
         ).filter(col("event_timestamp") > latest_ts)
-
-    except:
-        # If target table is empty, load all
+    else:
+        # If target table is empty or an error occurred, load all
         df = spark.read.jdbc(
             url=jdbc_url,
             table="customer_events.telecom_customer_events_raw",
             properties=db_properties
         )
-
     return df
 
 # Step 4: Define transformation logic
