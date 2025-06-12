@@ -32,6 +32,19 @@ services:
     working_dir: /app
     command: sleep infinity
 
+  superset:
+    image: apache/superset:2.1.0
+    container_name: superset
+    ports:
+      - "8088:8088"
+    environment:
+      - SUPERSET_SECRET_KEY=mysecretkey
+      - SUPERSET_LOAD_EXAMPLES=no
+    depends_on:
+      - postgres
+    volumes:
+      - superset_home:/app/superset_home
+
   postgres:
     image: postgres:15
     container_name: postgres
@@ -40,7 +53,7 @@ services:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=postgres
     ports:
-      - "5432:5432" # Add this line
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -102,3 +115,4 @@ services:
 volumes:
   kafka_data:
   postgres_data:
+  superset_home:
